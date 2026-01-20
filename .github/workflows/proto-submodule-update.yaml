@@ -1,0 +1,17 @@
+name: Remote Interface Update
+
+on:
+  repository_dispatch:
+    types: [protos-updated]
+  workflow_dispatch: # Allows manual triggering from the Actions UI
+
+jobs:
+  update-interface:
+    uses: fermi-ad/.github/.github/workflows/submodule-update.yaml@main
+    with:
+      submodule_name: 'interface-definitions'
+      submodule_path: 'interface-definitions'
+      pr_label: 'proto-update'
+    secrets:
+      APP_ID: ${{ vars.ACTION_SETTINGS_APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.ACTION_SETTINGS_PRIVATE_KEY }}
