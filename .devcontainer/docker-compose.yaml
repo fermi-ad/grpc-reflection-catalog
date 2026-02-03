@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ..:/workspace:cached
+      - proto-share:/etc/protos
+    environment:
+      - PROTO_PATH=/etc/protos/interface-definitions/proto
+    command: sleep infinity
+
+  git-sync:
+    image: registry.k8s.io/git-sync/git-sync:v4.5.1
+    user: "0:0"
+    volumes:
+      - proto-share:/etc/protos
+    environment:
+      - GIT_SYNC_REPO=https://github.com/fermi-ad/interface-definitions.git
+      - GIT_SYNC_REF=main
+      - GIT_SYNC_ROOT=/etc/protos
+      - GIT_SYNC_LINK=interface-definitions
+      - GIT_SYNC_WAIT=60
+      - GITSYNC_ADD_USER=true
+      - GITSYNC_PERMISSIONS=0777
+    command: ["--root=/etc/protos", "--link=interface-definitions"]
+
+volumes:
+  proto-share:

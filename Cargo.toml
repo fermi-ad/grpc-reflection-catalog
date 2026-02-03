@@ -6,12 +6,11 @@ edition = "2024"
 [dependencies]
 tonic = "0.14"
 tonic-reflection = "0.14"
+tokio = { version = "1.49", features = ["macros", "rt-multi-thread", "time"] }
 prost = "0.14"
-tokio = { version = "1.49", features = ["macros", "rt-multi-thread"] }
-# Needed here for runtime compilation of main.rs
-tonic-prost-build = "0.14"
-
-[build-dependencies]
-tonic-prost-build = "0.14"
+prost-reflect = "0.16"
+# A pure-rust parser for .proto files (no protoc needed!)
+protox = "0.9"
+notify = "8.2"
 walkdir = "2.5"
 
