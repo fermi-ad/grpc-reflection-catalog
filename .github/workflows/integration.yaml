@@ -15,11 +15,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    with:
+      pull-git-submodules: true
 
-# If using a git submodule, add 
-#    with:
-#      pull-git-submodules: true
-
-# If using an internal git repo as a Rust dependency, add
-#    with:
-#      references-internal-git-repo: true

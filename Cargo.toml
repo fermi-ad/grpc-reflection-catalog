@@ -1,0 +1,17 @@
+[package]
+name = "grpc-reflection-catalog"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tonic = "0.14"
+tonic-reflection = "0.14"
+prost = "0.14"
+tokio = { version = "1.49", features = ["macros", "rt-multi-thread"] }
+# Needed here for runtime compilation of main.rs
+tonic-prost-build = "0.14"
+
+[build-dependencies]
+tonic-prost-build = "0.14"
+walkdir = "2.5"
+

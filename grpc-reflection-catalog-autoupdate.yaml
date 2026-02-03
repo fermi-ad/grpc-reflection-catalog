@@ -1,0 +1,23 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: grpc-reflection-catalog
+  namespace: flux-system
+spec:
+  image: adregistry.fnal.gov/applications/grpc-reflection-catalog
+  interval: 1m0s
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: grpc-reflection-catalog
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: grpc-reflection-catalog
+  filterTags:
+    pattern: '^[0-9]+$'
+  policy:
+    numerical:
+      order: asc
