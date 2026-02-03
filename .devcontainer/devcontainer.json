@@ -1,20 +1,18 @@
 {
-    "name": "Rust",
-    "image": "adregistry.fnal.gov/dev-containers/rust:1.92.0",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "rust-lang.rust-analyzer"
-            ],
-            "settings": {
-                "debug.openDebug": "openOnDebugBreak",
-                "[rust]": {
-                    "editor.formatOnSave": true
-                }
-            }
+  "name": "Rust gRPC Reflection Dev + Git-Sync",
+  "dockerComposeFile": "docker-compose.yaml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": ["rust-lang.rust-analyzer"],
+      "settings": {
+        "debug.openDebug": "openOnDebugBreak",
+        "[rust]": {
+          "editor.formatOnSave": true
         }
-    },
-    "onCreateCommand": "if command -v apt-get; then apt-get update && apt-get install -y protobuf-compiler; elif command -v dnf; then dnf install -y protobuf-compiler; fi",
-    "postCreateCommand": "git submodule update --init --recursive && mkdir -p ~/.local/bin && curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v1.9.3/grpcurl_1.9.3_linux_x86_64.tar.gz | tar -xz -C ~/.local/bin grpcurl"
+      }
+    }
+  },
+  "postCreateCommand": "git submodule update --init --recursive --depth 1 && mkdir -p ~/.local/bin && curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v1.9.3/grpcurl_1.9.3_linux_x86_64.tar.gz | tar -xz -C ~/.local/bin grpcurl"
 }
-
