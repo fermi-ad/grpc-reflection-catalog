@@ -24,12 +24,21 @@ spec:
           image: adregistry.fnal.gov/applications/reflection-catalog:1 # {"$imagepolicy": "flux-system:reflection-catalog"}
           ports:
             - containerPort: 50051
+              name: grpc
           env:
             - name: PROTO_PATH
               value: "/etc/protos/interface-definitions/proto"
           volumeMounts:
             - name: proto-storage
               mountPath: /etc/protos
+          livenessProbe:
+            grpc:
+              port: 50051
+            initialDelaySeconds: 10
+          readinessProbe:
+            grpc:
+              port: 50051
+            initialDelaySeconds: 5
 
         - name: git-sync
           image: registry.k8s.io/git-sync/git-sync:v4.2.3
@@ -62,4 +71,3 @@ spec:
       name: grpc
   selector:
     app: grpc-reflection-catalog
-
