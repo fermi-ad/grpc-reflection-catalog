@@ -10,6 +10,8 @@ services:
     environment:
       - PROTO_PATH=/etc/protos/interface-definitions/proto
     command: sleep infinity
+    ports:
+      - "50051:50051"
 
   git-sync:
     image: registry.k8s.io/git-sync/git-sync:v4.5.1

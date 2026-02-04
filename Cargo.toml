@@ -14,3 +14,8 @@ protox = "0.9"
 notify = "8.2"
 walkdir = "2.5"
 
+[build-dependencies]
+protox = "0.9"
+prost = "0.14"
+prost-types = "0.14"
+

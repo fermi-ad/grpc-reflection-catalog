@@ -177,6 +177,7 @@ dependencies = [
  "notify",
  "prost",
  "prost-reflect",
+ "prost-types",
  "protox",
  "tokio",
  "tonic",
