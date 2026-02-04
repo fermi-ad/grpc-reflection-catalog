@@ -19,10 +19,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let encoded_set = compile_protos(&proto_path)?;
 
     // Health Check Service
-    let (mut health_reporter, health_service) = tonic_health::server::health_reporter();
+    let (health_reporter, health_service) = tonic_health::server::health_reporter();
+    // health_reporter.set_serving::<()>().await;
     health_reporter
-        .set_serving::<tonic_reflection::server::ServerReflectionServer<()>>()
+        .set_service_status("", tonic_health::ServingStatus::Serving)
         .await;
+    // Mark all discovered services as SERVING in the health reporter
+    // This makes 'grpcurl ... Health/Check' work for specific service names
+    let descriptor_set = prost_types::FileDescriptorSet::decode(&encoded_set[..])?;
+    for file in &descriptor_set.file {
+        for service in &file.service {
+            let full_name = format!(
+                "{}.{}",
+                file.package.as_deref().unwrap_or(""),
+                service.name.as_deref().unwrap_or("")
+            );
+            health_reporter
+                .set_service_status(full_name, tonic_health::ServingStatus::Serving)
+                .await;
+        }
+    }
 
     // Setup Watcher for git-sync updates
     let (tx, mut rx) = mpsc::channel(1);
@@ -38,12 +54,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Config::default(),
     )?;
 
-    // Watch the parent directory because git-sync swaps symlinks
-    let watch_target = Path::new(&proto_path)
-        .parent()
-        .unwrap_or_else(|| Path::new(&proto_path));
+    // Watch the parent directory of the proto root to catch symlink swaps
+    if let Some(parent) = Path::new(&proto_path).parent() {
+        watcher.watch(parent, RecursiveMode::Recursive)?;
+    } else {
+        watcher.watch(Path::new(&proto_path), RecursiveMode::Recursive)?;
+    }
 
-    watcher.watch(watch_target, RecursiveMode::Recursive)?;
     println!("📂 Monitoring Protos at: {proto_path}");
 
     let start_time = Instant::now();
@@ -62,6 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Setup Reflection Service
     let reflection_service = Builder::configure()
         .register_encoded_file_descriptor_set(&encoded_set)
+        .register_encoded_file_descriptor_set(tonic_health::pb::FILE_DESCRIPTOR_SET)
         .build_v1()?;
 
     println!("✅ gRPC Server listening on {addr}");
