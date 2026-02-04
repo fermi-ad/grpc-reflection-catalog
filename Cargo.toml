@@ -9,14 +9,8 @@ tonic-health = "0.14"
 tonic-reflection = "0.14"
 tokio = { version = "1.49", features = ["macros", "rt-multi-thread", "time"] }
 prost = "0.14"
-prost-reflect = "0.16"
-# A pure-rust parser for .proto files (no protoc needed!)
+prost-types = "0.14"
 protox = "0.9"
 notify = "8.2"
 walkdir = "2.5"
-
-[build-dependencies]
-protox = "0.9"
-prost = "0.14"
-prost-types = "0.14"
 
