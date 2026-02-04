@@ -16,7 +16,9 @@ COPY --from=builder /app/target/release/grpc-reflection-catalog /app/reflection
 
 ENV PROTO_PATH=/etc/protos/interface-definitions/proto
 
-USER 1000
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 EXPOSE 50051
 
 ENTRYPOINT ["/app/reflection"]
