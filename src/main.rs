@@ -18,12 +18,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initial Compilation at Runtime
     let encoded_set = compile_protos(&proto_path)?;
 
+    // Health Check Service
+    let (mut health_reporter, health_service) = tonic_health::server::health_reporter();
+    health_reporter
+        .set_serving::<tonic_reflection::server::ServerReflectionServer<()>>()
+        .await;
+
     // Setup Watcher for git-sync updates
     let (tx, mut rx) = mpsc::channel(1);
     let mut watcher = RecommendedWatcher::new(
         move |res: notify::Result<Event>| {
-            if res.is_ok() {
-                let _ = tx.blocking_send(());
+            if let Ok(event) = res {
+                // Only trigger on actual data modifications or link swaps
+                if event.kind.is_modify() || event.kind.is_create() {
+                    let _ = tx.blocking_send(());
+                }
             }
         },
         Config::default(),
@@ -41,9 +50,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::spawn(async move {
         while rx.recv().await.is_some() {
-            // Ignore events that happen within the first 5 seconds of startup
+            // Ignore events that happen within the first 30 seconds of startup
             // to avoid catching the event that might have just triggered a restart.
-            if start_time.elapsed() > Duration::from_secs(5) {
+            if start_time.elapsed() > Duration::from_secs(30) {
                 println!("🔄 git-sync updated the protos! Exiting to trigger reload...");
                 std::process::exit(0);
             }
@@ -58,6 +67,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("✅ gRPC Server listening on {addr}");
 
     Server::builder()
+        .add_service(health_service)
         .add_service(reflection_service)
         .serve(addr)
         .await?;
@@ -77,7 +87,7 @@ fn compile_protos(path: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         .collect();
 
     if proto_files.is_empty() {
-        return Err(format!("No .proto files found in {path} (checked subdirectories too)").into());
+        return Err(format!("No .proto files found in {path}").into());
     }
 
     println!("🔍 Found {} proto files", proto_files.len());
